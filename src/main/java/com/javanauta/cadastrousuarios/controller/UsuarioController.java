@@ -1,8 +1,11 @@
 package com.javanauta.cadastrousuarios.controller;
 
 import com.javanauta.cadastrousuarios.business.UsuarioService;
+import com.javanauta.cadastrousuarios.business.dto.UsuarioDTO;
 import com.javanauta.cadastrousuarios.infrastructure.entity.Usuario;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,9 +18,8 @@ public class UsuarioController {
 
     // POST - Adicionar um Usuário
     @PostMapping
-    public ResponseEntity<Void> gravarUsuarios(@RequestBody Usuario usuario) {
-        usuarioService.salvarUsuario(usuario);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<UsuarioDTO> gravarUsuarios(@RequestBody UsuarioDTO usuarioDTO) {
+        return ResponseEntity.ok(usuarioService.salvarUsuario(usuarioDTO));
     }
 
     // GET - Buscar um Usuário
@@ -35,9 +37,8 @@ public class UsuarioController {
 
     // PUT - Alterar um Usuário
     @PutMapping
-    public ResponseEntity<Void> atualizarUsuarioPorId(@RequestParam("id") Integer id,
-                                                      @RequestBody Usuario usuario) {
-        usuarioService.atualizarUsuarioPorId(id, usuario);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<UsuarioDTO> atualizarUsuarioPorId(@RequestParam("id") Integer id,
+                                                            @RequestBody UsuarioDTO usuarioDTO) {
+       return ResponseEntity.ok(usuarioService.atualizarUsuarioPorId(id, usuarioDTO));
     }
 }
