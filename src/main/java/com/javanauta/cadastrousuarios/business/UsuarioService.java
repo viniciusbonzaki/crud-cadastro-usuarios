@@ -1,6 +1,9 @@
 package com.javanauta.cadastrousuarios.business;
 
+import com.javanauta.cadastrousuarios.business.converter.UsuarioConverter;
+import com.javanauta.cadastrousuarios.business.dto.UsuarioDTO;
 import com.javanauta.cadastrousuarios.infrastructure.entity.Usuario;
+import com.javanauta.cadastrousuarios.infrastructure.exceptions.ConflictException;
 import com.javanauta.cadastrousuarios.infrastructure.exceptions.ResourceNotFoundException;
 import com.javanauta.cadastrousuarios.infrastructure.repository.UsuarioRepository;
 
@@ -13,10 +16,14 @@ import org.springframework.stereotype.Service;
 public class UsuarioService {
     // Injetar a dependencia do UsuarioRepository para realizar as operações
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioConverter usuarioConverter;
 
     // Método para salvar um Usuário no Banco de Dados
-    public void salvarUsuario(Usuario usuario) {
-        usuarioRepository.saveAndFlush(usuario);
+    public UsuarioDTO salvarUsuario(UsuarioDTO usuarioDTO) {
+        this.emailExiste(usuarioDTO.getEmail());
+        Usuario usuario = usuarioConverter.converterParaUsuario(usuarioDTO);
+        usuario = usuarioRepository.saveAndFlush(usuario);
+        return usuarioConverter.converterParaUsuarioDTO(usuario);
     }
 
     // Método para encontrar um Usuário por Email
@@ -32,20 +39,23 @@ public class UsuarioService {
     }
 
     // Método para alterar um Usuário por ID
-    public void atualizarUsuarioPorId(Integer id, Usuario usuario) {
-        // Encontrar o Usuário à ser alterado
-        Usuario usuarioEntity = usuarioRepository.findById(id).orElseThrow(
+    public UsuarioDTO atualizarUsuarioPorId(Integer id, UsuarioDTO usuarioDTO) {
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Erro: Usuário de ID " + id + " não Encontrado!")
         );
+        usuario = usuarioConverter.atualizarDadosUsuario(usuario, usuarioDTO);
+        return usuarioConverter.converterParaUsuarioDTO(usuarioRepository.save(usuario));
+    }
 
-        // Construir o novo Usuário
-        Usuario usuarioAtualizado = Usuario.builder()
-                .id(usuarioEntity.getId())
-                .nome(usuario.getNome() != null ? usuario.getNome() : usuarioEntity.getNome())
-                .email(usuario.getEmail() != null ? usuario.getEmail() : usuarioEntity.getEmail())
-                .build();
+    private void emailExiste(String email) {
+        boolean emailExiste = verificarSeEmailExiste(email);
 
-        // Salvar a alteração de Dados
-        usuarioRepository.save(usuarioAtualizado);
+        if (emailExiste) {
+            throw new ConflictException("Erro: Email " + email + " já existe!");
+        }
+    }
+
+    private boolean verificarSeEmailExiste(String email) {
+        return usuarioRepository.existsByEmail(email);
     }
 }
