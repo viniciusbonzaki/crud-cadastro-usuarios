@@ -14,7 +14,7 @@ import lombok.*;
 public class Usuario {
     // Identificador Único de cada Usuário (ID)
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     // Campos de cada Usuário
